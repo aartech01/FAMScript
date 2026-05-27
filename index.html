@@ -1,0 +1,675 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+  <title>FamScript Visual Builder</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="protection.js"></script>
+</head>
+<body class="mode-single">
+
+<!-- SIDEBAR OVERLAY (mobile tap-to-close) -->
+<div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+<!-- HEADER -->
+<header>
+  <div class="header-left">
+    <button id="btn-menu" class="btn-ghost" title="Menu">&#9776;</button>
+    <div class="logo">
+      <div class="logo-icon" id="logo-icon">FS</div>
+      <span class="logo-text">Fam<span>Script</span></span>
+    </div>
+    <select id="event-select" title="Select ceremony / event">
+      <option value="wedding">Wedding</option>
+      <option value="mundan">Mundan</option>
+      <option value="namkaran">Namkaran</option>
+      <option value="annaprashan">Annaprashan</option>
+      <option value="vastu">Vastu Puja</option>
+      <option value="upanayana">Upanayana</option>
+      <option value="godhbharai">Godh Bharai</option>
+      <option value="birthday">Birthday</option>
+      <option value="custom">Custom Event</option>
+    </select>
+    <input type="text" id="project-name" placeholder="Project name" value="My Family Tree">
+  </div>
+  <div class="header-right">
+    <span id="status-badge" class="status-badge status-idle">Ready</span>
+    <select id="theme-select" title="Mermaid diagram theme">
+      <option value="dark">Theme: Dark</option>
+      <option value="default">Theme: Default</option>
+      <option value="forest">Theme: Forest</option>
+      <option value="neutral">Theme: Neutral</option>
+      <option value="base">Theme: Base</option>
+    </select>
+    <button id="btn-help" class="btn-ghost">? Help</button>
+    <button id="btn-compile" class="btn-primary">&#9654; Compile</button>
+  </div>
+</header>
+
+<!-- EVENT BAR -->
+<div id="event-bar">
+  <div class="event-pill" id="event-pill">Wedding</div>
+  <span class="event-desc" id="event-desc">Enter the groom's and bride's family trees in separate panels</span>
+  <span class="event-badge-dual" id="event-dual-badge">Dual Canvas</span>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <button id="btn-sample" class="btn-event">Load Sample</button>
+    <button id="btn-clear" class="btn-danger">Clear</button>
+    <hr>
+    <div class="sidebar-label">Import</div>
+    <button id="btn-import-json">JSON File</button>
+    <button id="btn-import-mermaid">Mermaid File</button>
+    <input type="file" id="import-file" hidden>
+    <hr>
+    <div class="sidebar-label">Export</div>
+    <div id="exports-single" style="display:flex;flex-direction:column;gap:3px;">
+      <button id="btn-export-svg">SVG</button>
+      <button id="btn-export-png">PNG</button>
+      <button id="btn-export-jpg">JPG</button>
+      <button id="btn-export-md">Mermaid (.md)</button>
+    </div>
+    <div id="exports-wedding" style="display:none;flex-direction:column;gap:3px;">
+      <div class="sidebar-label groom-label">Groom's Side</div>
+      <button id="btn-export-groom-svg">SVG</button>
+      <button id="btn-export-groom-png">PNG</button>
+      <button id="btn-export-groom-md">Mermaid (.md)</button>
+      <div class="sidebar-label bride-label">Bride's Side</div>
+      <button id="btn-export-bride-svg">SVG</button>
+      <button id="btn-export-bride-png">PNG</button>
+      <button id="btn-export-bride-md">Mermaid (.md)</button>
+    </div>
+    <button id="btn-export-json">JSON Project</button>
+    <hr>
+    <button id="btn-view-mermaid">{ } View Mermaid</button>
+    <button id="btn-converter">⇄ Converter</button>
+  </nav>
+
+  <!-- WORK AREA -->
+  <div class="work-area">
+
+    <!-- EDITOR PANE -->
+    <div class="editor-pane">
+      <!-- wedding tabs -->
+      <div class="editor-tabs" id="editor-tabs">
+        <button class="tab-btn groom-tab active" data-side="groom">Groom's Family</button>
+        <button class="tab-btn bride-tab"         data-side="bride">Bride's Family</button>
+      </div>
+      <!-- single-mode header -->
+      <div class="pane-header single-pane-header">
+        <span class="pane-dot"></span>
+        <span id="editor-label">Mermaid Editor</span>
+      </div>
+      <textarea id="editor" spellcheck="false" autocomplete="off"
+        placeholder="graph TB&#10;  A[&quot;Person A&quot;] --&gt;|&quot;parent&quot;| B[&quot;Person B&quot;]&#10;&#10;%% Or click Load Sample to get started"></textarea>
+    </div>
+
+    <!-- PREVIEW PANE -->
+    <div class="preview-pane">
+
+      <!-- single mode header -->
+      <div class="pane-header single-only">
+        <span class="pane-dot"></span>
+        Tree Preview
+        <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">
+          Scroll · Drag · Pinch
+        </span>
+      </div>
+
+      <!-- SINGLE CANVAS VIEWPORT -->
+      <div class="canvas-viewport single-only" id="vp-single">
+        <div class="empty-state" id="es-single">
+          Write Mermaid code and press <strong>Compile</strong>,<br>or click <strong>Load Sample</strong> to get started.
+        </div>
+        <div class="canvas-controls">
+          <button class="ctrl-btn" data-action="zoom-out" title="Zoom Out">&#8722;</button>
+          <span class="zoom-label">100%</span>
+          <button class="ctrl-btn" data-action="zoom-in"  title="Zoom In">+</button>
+          <div class="ctrl-sep"></div>
+          <button class="ctrl-btn" data-action="fit"        title="Fit to screen">Fit</button>
+          <button class="ctrl-btn" data-action="reset"      title="Reset to 100%">1:1</button>
+          <div class="ctrl-sep"></div>
+          <button class="ctrl-btn" data-action="fullscreen" title="Fullscreen">[ ]</button>
+        </div>
+      </div>
+
+      <!-- DUAL MODE HEADERS -->
+      <div class="dual-panel-headers">
+        <div class="dual-panel-header groom-header">
+          Groom's Family Tree
+          <span style="margin-left:auto;font-size:10px;font-weight:400;opacity:.6">Scroll · Drag · Pinch</span>
+        </div>
+        <div class="dual-panel-header bride-header">
+          Bride's Family Tree
+          <span style="margin-left:auto;font-size:10px;font-weight:400;opacity:.6">Scroll · Drag · Pinch</span>
+        </div>
+      </div>
+
+      <!-- DUAL CANVAS VIEWPORTS -->
+      <div class="dual-previews">
+        <!-- GROOM VIEWPORT -->
+        <div class="canvas-viewport" id="vp-groom">
+          <div class="empty-state" id="es-groom">Groom's family tree will appear here</div>
+          <div class="canvas-controls">
+            <button class="ctrl-btn" data-action="zoom-out" title="Zoom Out">&#8722;</button>
+            <span class="zoom-label">100%</span>
+            <button class="ctrl-btn" data-action="zoom-in"  title="Zoom In">+</button>
+            <div class="ctrl-sep"></div>
+            <button class="ctrl-btn" data-action="fit"        title="Fit to screen">Fit</button>
+            <button class="ctrl-btn" data-action="reset"      title="Reset to 100%">1:1</button>
+            <div class="ctrl-sep"></div>
+            <button class="ctrl-btn" data-action="fullscreen" title="Fullscreen">[ ]</button>
+          </div>
+        </div>
+        <!-- BRIDE VIEWPORT -->
+        <div class="canvas-viewport" id="vp-bride">
+          <div class="empty-state" id="es-bride">Bride's family tree will appear here</div>
+          <div class="canvas-controls">
+            <button class="ctrl-btn" data-action="zoom-out" title="Zoom Out">&#8722;</button>
+            <span class="zoom-label">100%</span>
+            <button class="ctrl-btn" data-action="zoom-in"  title="Zoom In">+</button>
+            <div class="ctrl-sep"></div>
+            <button class="ctrl-btn" data-action="fit"        title="Fit to screen">Fit</button>
+            <button class="ctrl-btn" data-action="reset"      title="Reset to 100%">1:1</button>
+            <div class="ctrl-sep"></div>
+            <button class="ctrl-btn" data-action="fullscreen" title="Fullscreen">[ ]</button>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /preview-pane -->
+  </div><!-- /work-area -->
+</main>
+
+<!-- CONSOLE -->
+<footer>
+  <div class="console-header">
+    <span class="console-dot" id="console-dot"></span>
+    Console &middot; Validation Output
+  </div>
+  <div id="console-panel"></div>
+</footer>
+
+<!-- MERMAID CODE MODAL -->
+<div id="mermaid-modal" class="modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Generated Mermaid Code</h3>
+      <div class="modal-actions">
+        <button id="btn-copy-mermaid" class="btn-sm">Copy</button>
+        <button id="modal-close" class="btn-sm">Close</button>
+      </div>
+    </div>
+    <div class="modal-body"><pre id="mermaid-code-view"></pre></div>
+  </div>
+</div>
+
+<!-- HELP MODAL -->
+<div id="help-modal" class="modal" style="display:none">
+  <div class="modal-box help-modal-box">
+    <div class="modal-header">
+      <h3>Mermaid Family Tree Reference</h3>
+      <div class="modal-actions">
+        <button id="btn-copy-help" class="btn-sm">Copy Text</button>
+        <button id="btn-pdf-help" class="btn-sm btn-sm-accent">Download PDF</button>
+        <button id="help-modal-close" class="btn-sm">Close</button>
+      </div>
+    </div>
+
+    <!-- NAV TABS -->
+    <div class="help-nav" id="help-nav">
+      <button class="help-nav-btn active" data-tab="tab-intro">Overview</button>
+      <button class="help-nav-btn" data-tab="tab-syntax">Mermaid Syntax</button>
+      <button class="help-nav-btn" data-tab="tab-relations">Edge Types</button>
+      <button class="help-nav-btn" data-tab="tab-validation">Node Styling</button>
+      <button class="help-nav-btn" data-tab="tab-events">Events</button>
+      <button class="help-nav-btn" data-tab="tab-canvas">Canvas</button>
+      <button class="help-nav-btn" data-tab="tab-io">Import / Export</button>
+      <button class="help-nav-btn" data-tab="tab-example">Full Example</button>
+    </div>
+
+    <div class="modal-body help-modal-body" id="help-modal-body">
+
+      <!-- ══════════ TAB: OVERVIEW ══════════ -->
+      <div class="help-tab active" id="tab-intro">
+        <p class="help-intro">
+          Write <strong>Mermaid <code>graph TB</code></strong> code directly in the editor. Click <strong>Compile</strong> (or <kbd>Ctrl</kbd>+<kbd>Enter</kbd>) to render the family tree diagram instantly. No special language to learn — just standard Mermaid syntax.
+        </p>
+
+        <div class="help-section">How It Works</div>
+        <div class="help-flow">
+          <div class="help-flow-step"><span class="hf-num">1</span><span class="hf-label">Write Mermaid</span><span class="hf-desc">graph TB code with nodes and edges</span></div>
+          <div class="help-flow-arrow">&rarr;</div>
+          <div class="help-flow-step"><span class="hf-num">2</span><span class="hf-label">Compile</span><span class="hf-desc">Click Compile or press Ctrl+Enter</span></div>
+          <div class="help-flow-arrow">&rarr;</div>
+          <div class="help-flow-step"><span class="hf-num">3</span><span class="hf-label">Visual Tree</span><span class="hf-desc">Diagram rendered with zoom, pan, fullscreen</span></div>
+          <div class="help-flow-arrow">&rarr;</div>
+          <div class="help-flow-step"><span class="hf-num">4</span><span class="hf-label">Export</span><span class="hf-desc">SVG, PNG, JPG, Markdown, or JSON</span></div>
+        </div>
+
+        <div class="help-section">Quick Start</div>
+        <ol class="help-ol">
+          <li>Select a ceremony from the event dropdown (e.g. <strong>Wedding</strong>).</li>
+          <li>Click <strong>Load Sample</strong> to load a working Mermaid example.</li>
+          <li>Press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> — the tree renders immediately.</li>
+          <li>Edit node labels and edges, then press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to re-render.</li>
+          <li>Check the <strong>Console</strong> at the bottom for Mermaid render errors.</li>
+          <li>Export using the sidebar buttons.</li>
+        </ol>
+
+        <div class="help-section">Keyboard Shortcuts</div>
+        <table class="help-table">
+          <thead><tr><th>Shortcut</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td><td>Compile / re-render the tree</td></tr>
+            <tr><td><kbd>Tab</kbd></td><td>Insert 2 spaces in the editor</td></tr>
+            <tr><td><kbd>Scroll</kbd> on canvas</td><td>Zoom toward cursor</td></tr>
+            <tr><td><kbd>Click</kbd> + drag</td><td>Pan the canvas</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Comments</div>
+        <p class="help-p">Use <code>%%</code> for Mermaid-native comments. Lines starting with <code>//</code> or <code>#</code> are also stripped before rendering:</p>
+        <div class="help-code"><pre>%% This is a Mermaid comment
+// Also stripped before render
+# Also stripped before render</pre></div>
+
+        <div class="help-section">ID Naming Tip</div>
+        <p class="help-p">Node IDs must be unique, contain no spaces. Recommended format: <code>ROLE_GEN_NNN</code></p>
+        <table class="help-table">
+          <thead><tr><th>Example ID</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>GROOM_G0_001</code></td><td>Groom, generation 0</td></tr>
+            <tr><td><code>GROOM_DAD_P1_001</code></td><td>Groom's father, generation +1</td></tr>
+            <tr><td><code>BRIDE_SIS_G0_002</code></td><td>Bride's sister, generation 0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══════════ TAB: MERMAID SYNTAX ══════════ -->
+      <div class="help-tab" id="tab-syntax">
+
+        <div class="help-section">Basic Structure</div>
+        <div class="help-code"><pre>graph TB
+  ID["Label text"]
+  A --> B
+  A --- B</pre></div>
+
+        <div class="help-section">Node Definition</div>
+        <p class="help-p">Define a node with a unique ID and a quoted label:</p>
+        <div class="help-code"><pre>GROOM_G0_001["Arjun Kumar, 28 (M)"]
+BRIDE_G0_001["Priya Sharma, 25 (F)"]</pre></div>
+        <div class="help-tip">Put name, age, and gender indicator in the label — it appears inside the node box.</div>
+
+        <div class="help-section">The Couple Junction Dot</div>
+        <p class="help-p">Join a married couple through a small junction dot <code>CP_NAME(( ))</code>, then point the dot at their children. This keeps every generation on one aligned row and prevents connector lines from crossing — no <code>subgraph</code> blocks needed.</p>
+        <div class="help-code"><pre>DAD["Ramesh, 55 (M)"]
+MOM["Sita, 52 (F)"]
+SELF["Rohan, 28 (M)"]
+SIS["Priya, 25 (F)"]
+CP_DAD_MOM(( ))            %% couple junction dot
+
+DAD ---|"father"| CP_DAD_MOM
+MOM ---|"mother"| CP_DAD_MOM
+CP_DAD_MOM -->|"son"| SELF
+CP_DAD_MOM -->|"daughter"| SIS</pre></div>
+        <div class="help-tip">Why a dot? Pointing two parents straight at two children makes a crossing pair of lines Dagre can't untangle. One shared dot removes the crossing and lines the generations up.</div>
+
+        <div class="help-section">Edges (Relationships)</div>
+        <div class="help-code"><pre>DAD ---|"father"| CP_DAD_MOM    %% spouse → couple dot (line)
+CP_DAD_MOM -->|"son"| SELF      %% couple dot → child (arrow)
+GDF -->|"father"| DAD           %% direct parent → child (arrow)
+DAD -.->|"nephew"| FRIEND       %% step / cousin / nephew (dashed)</pre></div>
+      </div>
+
+      <!-- ══════════ TAB: EDGE TYPES ══════════ -->
+      <div class="help-tab" id="tab-relations">
+        <div class="help-section">Edge Syntax Summary</div>
+        <table class="help-table">
+          <thead><tr><th>Mermaid Syntax</th><th>Visual</th><th>Family Use</th></tr></thead>
+          <tbody>
+            <tr><td><code>A --&gt;|"label"| B</code></td><td>&rarr; solid arrow</td><td>Parent to child (blood / legal)</td></tr>
+            <tr><td><code>A ---|"label"| B</code></td><td>&mdash; solid line</td><td>Marriage / partnership</td></tr>
+            <tr><td><code>A ==&gt;|"label"| B</code></td><td>&#8658; bold arrow</td><td>Core couple highlight</td></tr>
+            <tr><td><code>A -.-&gt;|"label"| B</code></td><td>- -&gt; dashed</td><td>Sibling, cousin, step, adoptive, godparent</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Common Label Conventions</div>
+        <table class="help-table">
+          <thead><tr><th>Label</th><th>Edge</th><th>Relationship</th></tr></thead>
+          <tbody>
+            <tr><td><code>"father"</code></td><td>&rarr;</td><td>Father to child</td></tr>
+            <tr><td><code>"mother"</code></td><td>&rarr;</td><td>Mother to child</td></tr>
+            <tr><td><code>"parent"</code></td><td>&rarr;</td><td>Generic parent to child</td></tr>
+            <tr><td><code>"married"</code></td><td>&mdash;</td><td>Spouse / marriage</td></tr>
+            <tr><td><code>"partner"</code></td><td>&#8658;</td><td>Core couple</td></tr>
+            <tr><td><code>"sibling"</code></td><td>- -&gt;</td><td>Brother / sister</td></tr>
+            <tr><td><code>"cousin"</code></td><td>- -&gt;</td><td>Cousin</td></tr>
+            <tr><td><code>"step-parent"</code></td><td>- -&gt;</td><td>Step-parent</td></tr>
+            <tr><td><code>"adoptive"</code></td><td>- -&gt;</td><td>Adoptive parent</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Console Log Icons</div>
+        <table class="help-table">
+          <thead><tr><th>Icon</th><th>Type</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><strong style="color:var(--ok)">&#10003;</strong></td><td>Success</td><td>Tree rendered successfully</td></tr>
+            <tr><td><strong style="color:var(--err)">&#10007;</strong></td><td>Error</td><td>Mermaid render failed — fix the syntax</td></tr>
+            <tr><td><strong style="color:var(--info)">&#8505;</strong></td><td>Info</td><td>General message (e.g. editor is empty)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══════════ TAB: NODE STYLING ══════════ -->
+      <div class="help-tab" id="tab-validation">
+        <p class="help-intro">You don't write any <code>style</code> lines. FamScript styles the diagram automatically every time you compile — just define nodes and edges.</p>
+
+        <div class="help-section">What Gets Styled Automatically</div>
+        <table class="help-table">
+          <thead><tr><th>Node</th><th>Appearance</th></tr></thead>
+          <tbody>
+            <tr><td>Self / ego node — any <code>ROLE_G0_NNN</code> id</td><td><span style="background:#dbeafe;color:#1a3a5c;padding:1px 7px;border:1.5px solid #2563eb;border-radius:3px">Blue card</span> — the person the tree centres on</td></tr>
+            <tr><td>Every other person node</td><td><span style="background:#fff;color:#1a1a1a;padding:1px 7px;border:1.5px solid #555;border-radius:3px">White card</span> with a grey border</td></tr>
+            <tr><td>Couple junction dot — <code>CP_*(( ))</code></td><td>Small filled connector circle linking the two spouses</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Example — Just Nodes &amp; Edges</div>
+        <div class="help-code"><pre>graph TB
+  DAD["Ramesh, 55 (M)"]
+  MOM["Sita, 52 (F)"]
+  SELF_G0_001["Rohan, 28 (M)"]
+  CP_DAD_MOM(( ))
+
+  DAD ---|"father"| CP_DAD_MOM
+  MOM ---|"mother"| CP_DAD_MOM
+  CP_DAD_MOM -->|"son"| SELF_G0_001</pre></div>
+        <div class="help-tip">No colours in the code — <code>SELF_G0_001</code> renders blue (it matches the <code>ROLE_G0_NNN</code> self pattern) and the rest render as white cards. Use the <strong>Mermaid Theme</strong> dropdown to switch the overall palette.</div>
+      </div>
+
+      <!-- ══════════ TAB: EVENTS ══════════ -->
+      <div class="help-tab" id="tab-events">
+        <p class="help-intro">The app ships with 9 Indian ceremony presets. Select one from the dropdown — the accent colour, description, and canvas layout adapt instantly.</p>
+
+        <div class="help-section">Available Events</div>
+        <table class="help-table">
+          <thead><tr><th>Event</th><th>Canvas</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><strong>Wedding</strong></td><td>Combined</td><td>Groom's and bride's trees combined on one canvas — groom left, bride right</td></tr>
+            <tr><td>Mundan</td><td>Single</td><td>Child's first haircut — document the child's family</td></tr>
+            <tr><td>Namkaran</td><td>Single</td><td>Baby naming ceremony family tree</td></tr>
+            <tr><td>Annaprashan</td><td>Single</td><td>First rice-feeding ceremony</td></tr>
+            <tr><td>Vastu Puja</td><td>Single</td><td>House-warming — household family tree</td></tr>
+            <tr><td>Upanayana</td><td>Single</td><td>Sacred thread / Janeu ceremony</td></tr>
+            <tr><td>Godh Bharai</td><td>Single</td><td>Baby shower family tree</td></tr>
+            <tr><td>Birthday</td><td>Single</td><td>Birthday celebration family tree</td></tr>
+            <tr><td>Custom Event</td><td>Single</td><td>Any other occasion — neutral accent</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Wedding Combined Canvas</div>
+        <p class="help-p">Wedding merges both family trees into one canvas with groom on the left and bride on the right:</p>
+        <ul class="help-ul">
+          <li>The editor has <strong>Groom's Family</strong> and <strong>Bride's Family</strong> tabs — each holds its own Mermaid code.</li>
+          <li>On compile, both trees are automatically merged into a single diagram — groom on the left, bride on the right.</li>
+          <li>A marriage dot is added between the groom's and bride's G0 nodes, descending to a shared child centred between them.</li>
+          <li>The single canvas has zoom, pan, and fullscreen controls.</li>
+          <li>Export the combined tree as SVG, PNG, or Markdown.</li>
+        </ul>
+        <div class="help-tip">Switch between Groom and Bride tabs freely — your text is saved automatically when you switch.</div>
+
+        <div class="help-section">Adding a Custom Event (for Developers)</div>
+        <p class="help-p">To add your own ceremony preset, add one entry to the <code>EVENTS</code> object in <code>app.js</code>:</p>
+        <div class="help-code"><pre>myEvent: {
+  name:    'My Ceremony',
+  color:   '#7c3aed',               // accent hex colour
+  ecLight: 'rgba(124,58,237,0.07)', // dark-bg tinted background
+  dual:    false,                   // true = wedding dual canvas
+  desc:    'Description shown in the event bar'
+}</pre></div>
+        <p class="help-p" style="margin-top:8px">Then add a matching <code>&lt;option&gt;</code> in the <code>&lt;select id="event-select"&gt;</code> in <code>index.html</code>.</p>
+      </div>
+
+      <!-- ══════════ TAB: CANVAS ══════════ -->
+      <div class="help-tab" id="tab-canvas">
+        <div class="help-section">Canvas Toolbar</div>
+        <table class="help-table">
+          <thead><tr><th>Button</th><th>Action</th><th>Detail</th></tr></thead>
+          <tbody>
+            <tr><td><code>&minus;</code></td><td>Zoom out</td><td>Scales to 77% per click, centred on the canvas</td></tr>
+            <tr><td><code>+</code></td><td>Zoom in</td><td>Scales to 130% per click, centred on the canvas</td></tr>
+            <tr><td>Zoom %</td><td>Current zoom level</td><td>Read-only display (e.g. 75%, 100%, 200%)</td></tr>
+            <tr><td><code>Fit</code></td><td>Fit to screen</td><td>Auto-scales and centres the entire tree in the viewport</td></tr>
+            <tr><td><code>1:1</code></td><td>Reset to 100%</td><td>Returns to natural size with no translation</td></tr>
+            <tr><td><code>[ ]</code></td><td>Fullscreen</td><td>The canvas fills the entire screen; press Esc to exit</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Mouse &amp; Trackpad</div>
+        <table class="help-table">
+          <thead><tr><th>Gesture</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>Scroll wheel</td><td>Zoom in/out <strong>toward the cursor position</strong> — the point under the cursor stays fixed</td></tr>
+            <tr><td>Click + drag</td><td>Pan the canvas freely in any direction</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Touch (Mobile / Tablet)</div>
+        <table class="help-table">
+          <thead><tr><th>Gesture</th><th>Action</th></tr></thead>
+          <tbody>
+            <tr><td>One-finger drag</td><td>Pan the canvas</td></tr>
+            <tr><td>Two-finger pinch</td><td>Zoom in or out (pinch centre = zoom focal point)</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">Auto-fit After Compile</div>
+        <p class="help-p">Every time a tree compiles successfully, the canvas automatically fits the entire tree to the viewport and centres it. You always start with a full overview and then zoom in to explore details.</p>
+
+        <div class="help-section">Responsive Layout</div>
+        <table class="help-table">
+          <thead><tr><th>Screen Width</th><th>Layout</th></tr></thead>
+          <tbody>
+            <tr><td>&gt; 1024 px</td><td>Full desktop: sidebar + editor + preview side-by-side</td></tr>
+            <tr><td>769 – 1024 px</td><td>Compact tablet: narrower sidebar and editor</td></tr>
+            <tr><td>481 – 768 px</td><td>Mobile: sidebar becomes a slide-in drawer (tap &#9776;), editor and preview stack vertically</td></tr>
+            <tr><td>&le; 480 px</td><td>Small mobile: further compressed header, dual canvases stack vertically</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- ══════════ TAB: IMPORT / EXPORT ══════════ -->
+      <div class="help-tab" id="tab-io">
+        <div class="help-section">Import</div>
+        <p class="help-p">Click <strong>JSON File</strong> or <strong>Mermaid File</strong> in the sidebar to import existing data.</p>
+        <table class="help-table">
+          <thead><tr><th>Format</th><th>Extension</th><th>What it restores</th></tr></thead>
+          <tbody>
+            <tr><td><strong>JSON Project</strong></td><td>.json</td><td>Full project: Mermaid code and project name — re-importable; opens in JSON editor for review before rendering</td></tr>
+            <tr><td><strong>Mermaid Diagram</strong></td><td>.mmd .md .txt</td><td>Parses a <code>graph TB</code> Mermaid file — code fences and Markdown headings are stripped automatically</td></tr>
+          </tbody>
+        </table>
+        <div class="help-tip">Mermaid files exported by Obsidian, Notion, or GitHub Markdown are supported — the importer strips code fences automatically.</div>
+
+        <div class="help-section">Export</div>
+        <p class="help-p">Once a tree is compiled, export it using the buttons in the sidebar.</p>
+        <table class="help-table">
+          <thead><tr><th>Format</th><th>Best For</th><th>Technical Detail</th></tr></thead>
+          <tbody>
+            <tr><td><strong>SVG</strong></td><td>Presentations, print, web embedding</td><td>Lossless vector; scales to any size without pixelation</td></tr>
+            <tr><td><strong>PNG</strong></td><td>WhatsApp, email, social media</td><td>Rasterised at 2&times; resolution (retina quality)</td></tr>
+            <tr><td><strong>JPG</strong></td><td>Email attachments where file size matters</td><td>JPEG compression at 95% quality; white background fill</td></tr>
+            <tr><td><strong>Markdown</strong></td><td>GitHub README, Notion, Obsidian</td><td>Wraps Mermaid code in a ` ```mermaid ``` ` fence block</td></tr>
+            <tr><td><strong>JSON Project</strong></td><td>Saving progress, sharing project files</td><td>Full project with Mermaid code; re-importable; human-readable</td></tr>
+          </tbody>
+        </table>
+
+        <div class="help-section">View Mermaid Code</div>
+        <p class="help-p">Click <strong>{ } View Mermaid</strong> in the sidebar to open a modal showing the raw Mermaid <code>graph TB</code> code. Use <strong>Copy</strong> to paste it into any Mermaid-compatible tool.</p>
+
+        <div class="help-section">JSON Project Format</div>
+        <div class="help-code"><pre>{
+  "projectName": "Kumar Family",
+  "version": "2.0",
+  "mermaid": "graph TB\n  ..."
+}
+
+%% Wedding (dual) format:
+{
+  "projectName": "Kumar Wedding",
+  "version": "2.0",
+  "groom": "graph TB\n  ...",
+  "bride": "graph TB\n  ..."
+}</pre></div>
+      </div>
+
+      <!-- ══════════ TAB: FULL EXAMPLE ══════════ -->
+      <div class="help-tab" id="tab-example">
+        <p class="help-intro">A complete 3-generation wedding example in Mermaid syntax. Copy each block into the corresponding editor tab to see a working tree immediately.</p>
+
+        <div class="help-section">Groom's Family</div>
+        <div class="help-code"><pre>graph TB
+
+  GROOM_GDF_P2_001["Mohan Kumar, 78 (M)"]
+  GROOM_GDM_P2_001["Kamla Kumar, 75 (F)"]
+  GROOM_DAD_P1_001["Rajesh Kumar, 55 (M)"]
+  GROOM_MOM_P1_001["Sunita Kumar, 52 (F)"]
+  GROOM_UNCLE_P1_001["Vinod Kumar, 50 (M)"]
+  GROOM_G0_001["Arjun Kumar, 28 (M)"]
+  CP_GROOM_GD(( ))
+  CP_GROOM_DM(( ))
+
+  GROOM_GDF_P2_001 ---|"father"| CP_GROOM_GD
+  GROOM_GDM_P2_001 ---|"mother"| CP_GROOM_GD
+  CP_GROOM_GD -->|"son"| GROOM_DAD_P1_001
+  CP_GROOM_GD -->|"son"| GROOM_UNCLE_P1_001
+  GROOM_DAD_P1_001 ---|"father"| CP_GROOM_DM
+  GROOM_MOM_P1_001 ---|"mother"| CP_GROOM_DM
+  CP_GROOM_DM -->|"son"| GROOM_G0_001</pre></div>
+
+        <div class="help-section">Bride's Family</div>
+        <div class="help-code"><pre>graph TB
+
+  BRIDE_GDF_P2_001["Suresh Sharma, 76 (M)"]
+  BRIDE_GDM_P2_001["Geeta Sharma, 73 (F)"]
+  BRIDE_DAD_P1_001["Vikram Sharma, 52 (M)"]
+  BRIDE_MOM_P1_001["Kavita Sharma, 49 (F)"]
+  BRIDE_G0_001["Priya Sharma, 25 (F)"]
+  BRIDE_SIS_G0_001["Anjali Sharma, 22 (F)"]
+  CP_BRIDE_GD(( ))
+  CP_BRIDE_DM(( ))
+
+  BRIDE_GDF_P2_001 ---|"father"| CP_BRIDE_GD
+  BRIDE_GDM_P2_001 ---|"mother"| CP_BRIDE_GD
+  CP_BRIDE_GD -->|"son"| BRIDE_DAD_P1_001
+  BRIDE_DAD_P1_001 ---|"father"| CP_BRIDE_DM
+  BRIDE_MOM_P1_001 ---|"mother"| CP_BRIDE_DM
+  CP_BRIDE_DM -->|"daughter"| BRIDE_G0_001
+  CP_BRIDE_DM -->|"daughter"| BRIDE_SIS_G0_001</pre></div>
+
+        <div class="help-section">How to Use This Example</div>
+        <ol class="help-ol">
+          <li>Select <strong>Wedding</strong> from the event dropdown.</li>
+          <li>Click the <strong>Groom's Mermaid</strong> tab and paste the first block.</li>
+          <li>Click the <strong>Bride's Mermaid</strong> tab and paste the second block.</li>
+          <li>Press <kbd>Ctrl</kbd>+<kbd>Enter</kbd> to render the combined tree.</li>
+          <li>Both families appear on one canvas, joined through a marriage dot and shared child.</li>
+          <li>Replace names and ages with real family data.</li>
+        </ol>
+        <div class="help-tip">Node labels follow the pattern <code>ID["Full Name, Age (M/F)"]</code>. Colours are applied automatically — the <code>ROLE_G0_NNN</code> self node turns blue and the rest become white cards. No <code>style</code> lines required.</div>
+      </div>
+
+    </div><!-- /modal-body -->
+  </div>
+</div>
+
+<!-- CONVERTER MODAL -->
+<div id="converter-modal" class="modal" style="display:none">
+  <div class="modal-box conv-modal-box">
+    <div class="modal-header">
+      <h3>Syntax Converter</h3>
+      <div class="modal-actions">
+        <button id="btn-conv-copy" class="btn-sm">Copy Output</button>
+        <button id="conv-modal-close" class="btn-sm">Close</button>
+      </div>
+    </div>
+
+    <!-- mode tabs -->
+    <div class="conv-tabs">
+      <button class="conv-tab-btn active" data-mode="json2mermaid">JSON → Mermaid</button>
+      <button class="conv-tab-btn" data-mode="mermaid2json">Mermaid → JSON</button>
+    </div>
+
+    <div class="conv-body">
+      <div class="conv-panel">
+        <div class="conv-panel-label" id="conv-input-label">Input — JSON Project</div>
+        <textarea id="conv-input" spellcheck="false" placeholder="Paste exported JSON project here…"></textarea>
+      </div>
+      <div class="conv-divider">
+        <button id="btn-conv-run" class="btn-primary conv-run-btn">Convert</button>
+      </div>
+      <div class="conv-panel">
+        <div class="conv-panel-label">Output</div>
+        <textarea id="conv-output" spellcheck="false" readonly placeholder="Output will appear here…"></textarea>
+      </div>
+    </div>
+
+    <div class="conv-footer">
+      <span id="conv-status" class="conv-status"></span>
+    </div>
+  </div>
+</div>
+
+<!-- JSON EDITOR MODAL -->
+<div id="json-editor-modal" class="modal" style="display:none">
+  <div class="modal-box mmd-editor-box">
+    <div class="modal-header">
+      <h3>JSON Project Editor</h3>
+      <div class="modal-actions">
+        <button id="btn-json-render" class="btn-primary" style="font-size:12px;padding:5px 14px">&#9654; Render Tree</button>
+        <button id="btn-json-copy" class="btn-sm">Copy</button>
+        <button id="json-editor-close" class="btn-sm">Close</button>
+      </div>
+    </div>
+    <div class="mmd-editor-body">
+      <div class="mmd-editor-left">
+        <div class="mmd-editor-panel-label">JSON Content</div>
+        <textarea id="json-editor-input" spellcheck="false" placeholder='{"projectName":"...","mermaid":"graph TB\n  ..."}'></textarea>
+      </div>
+      <div class="mmd-editor-right">
+        <div class="mmd-editor-panel-label">How to use</div>
+        <div style="padding:16px;font-size:12px;color:var(--muted);line-height:1.7">
+          <p style="margin-bottom:12px">Review or edit the imported JSON, then click <strong>Render Tree</strong> to apply it to the active canvas.</p>
+          <p style="margin-bottom:8px"><strong>Supported formats:</strong></p>
+          <ul style="padding-left:18px;margin:0">
+            <li>New format: <code>{"mermaid":"graph TB..."}</code></li>
+            <li>Old format: <code>{"nodes":[...],"relations":[...]}</code></li>
+            <li>Dual (wedding): <code>{"groom":"graph TB...","bride":"graph TB..."}</code></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="conv-footer">
+      <span id="json-editor-status" class="conv-status"></span>
+    </div>
+  </div>
+</div>
+
+<!-- SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script src="utils.js"></script>
+<script src="mermaidGenerator.js"></script>
+<script src="importer.js"></script>
+<script src="export.js"></script>
+<script src="canvas.js"></script>
+<script src="app.js"></script>
+<script src="converter.js"></script>
+</body>
+</html>
