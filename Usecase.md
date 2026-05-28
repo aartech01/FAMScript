@@ -1,4 +1,4 @@
-# FamScript Visual Builder — Use Case & Feature Guide
+# FamScript — Use Case & Feature Guide
 
 > A code-first family tree compiler for Indian ceremonies and beyond.
 > Write structured text, get a visual diagram instantly.
@@ -26,7 +26,7 @@
 
 ## What Is FamScript?
 
-FamScript Visual Builder is a **browser-based, code-driven genealogy tool** that lets you describe a family tree in plain structured text and instantly renders it as a professional visual diagram — no drawing, no dragging, no software installation required.
+FamScript is a **browser-based, code-driven genealogy tool** that lets you describe a family tree in plain structured text and instantly renders it as a professional visual diagram — no drawing, no dragging, no software installation required.
 
 It is purpose-built for **Indian ceremonies** (weddings, Mundan, Namkaran, Vastu Puja, and more) where both sides of a family must be documented, compared, and shared. It also works for any general genealogy task worldwide.
 
@@ -656,4 +656,4 @@ Use the scroll wheel over either canvas to zoom in. Drag to pan. Click **Fit** t
 
 ---
 
-*FamScript Visual Builder — built for families, designed for ceremonies, powered by Mermaid.*
+*FamScript — built for families, designed for ceremonies, powered by Mermaid.*

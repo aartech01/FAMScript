@@ -1,4 +1,4 @@
-# FamScript Visual Builder — Complete User Guide
+# FamScript — Complete User Guide
 
 **Version 1.0 | Code-first family tree compiler for Indian ceremonies**
 
@@ -30,7 +30,7 @@
 
 ## 1. Overview
 
-**FamScript Visual Builder** is a browser-based, code-first family tree compiler designed specifically for Indian ceremonies. Instead of dragging boxes and drawing lines, you write a short structured script — the tool instantly parses it, validates it against a set of family rules, and renders a colour-coded, zoomable diagram.
+**FamScript** is a browser-based, code-first family tree compiler designed specifically for Indian ceremonies. Instead of dragging boxes and drawing lines, you write a short structured script — the tool instantly parses it, validates it against a set of family rules, and renders a colour-coded, zoomable diagram.
 
 **Key principles:**
 
@@ -845,4 +845,4 @@ The Mermaid output uses `graph TB` (top-to-bottom) layout. Generations are group
 
 ---
 
-*FamScript Visual Builder — All processing is done locally in your browser. No data is sent to any server.*
+*FamScript — All processing is done locally in your browser. No data is sent to any server.*

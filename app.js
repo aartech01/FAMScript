@@ -1108,7 +1108,7 @@ Notes:
   automatically when you compile.
 
 ---
-FamScript Visual Builder
+FamScript
 `;
 }
 
@@ -1215,7 +1215,7 @@ function buildHelpPrintDoc() {
 <body>
 
 <h1>Mermaid Family Tree <span class="accent">Reference Guide</span></h1>
-<div class="subtitle">FamScript Visual Builder &mdash; Visual family tree builder for Indian ceremonies</div>
+<div class="subtitle">FamScript &mdash; Visual family tree builder for Indian ceremonies</div>
 
 <div class="intro-box">
   Write <strong>Mermaid graph TB</strong> code directly in the editor &mdash; the tool renders it instantly into a colour-coded, zoomable family tree diagram. No drawing, no dragging, no account required. Everything runs in the browser.
@@ -1357,7 +1357,7 @@ function buildHelpPrintDoc() {
 <div class="tip">Paste the code above into the Groom's Mermaid tab, select Wedding from the dropdown, and press Ctrl+Enter to render instantly. In Wedding mode the groom and bride trees are joined automatically through a marriage dot and a shared child.</div>
 
 <footer>
-  FamScript Visual Builder &mdash; Family tree builder for Indian ceremonies &mdash; All processing is done locally in your browser. No data is sent to any server.
+  FamScript &mdash; Family tree builder for Indian ceremonies &mdash; All processing is done locally in your browser. No data is sent to any server.
 </footer>
 
 </body>
