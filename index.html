@@ -47,13 +47,6 @@
   </div>
 </header>
 
-<!-- EVENT BAR -->
-<div id="event-bar">
-  <div class="event-pill" id="event-pill">Wedding</div>
-  <span class="event-desc" id="event-desc">Enter the groom's and bride's family trees in separate panels</span>
-  <span class="event-badge-dual" id="event-dual-badge">Dual Canvas</span>
-</div>
-
 <!-- MAIN -->
 <main>
 
@@ -68,21 +61,11 @@
     <input type="file" id="import-file" hidden>
     <hr>
     <div class="sidebar-label">Export</div>
-    <div id="exports-single" style="display:flex;flex-direction:column;gap:3px;">
+    <div style="display:flex;flex-direction:column;gap:3px;">
       <button id="btn-export-svg">SVG</button>
       <button id="btn-export-png">PNG</button>
       <button id="btn-export-jpg">JPG</button>
       <button id="btn-export-md">Mermaid (.md)</button>
-    </div>
-    <div id="exports-wedding" style="display:none;flex-direction:column;gap:3px;">
-      <div class="sidebar-label groom-label">Groom's Side</div>
-      <button id="btn-export-groom-svg">SVG</button>
-      <button id="btn-export-groom-png">PNG</button>
-      <button id="btn-export-groom-md">Mermaid (.md)</button>
-      <div class="sidebar-label bride-label">Bride's Side</div>
-      <button id="btn-export-bride-svg">SVG</button>
-      <button id="btn-export-bride-png">PNG</button>
-      <button id="btn-export-bride-md">Mermaid (.md)</button>
     </div>
     <button id="btn-export-json">JSON Project</button>
     <hr>
@@ -95,13 +78,8 @@
 
     <!-- EDITOR PANE -->
     <div class="editor-pane">
-      <!-- wedding tabs -->
-      <div class="editor-tabs" id="editor-tabs">
-        <button class="tab-btn groom-tab active" data-side="groom">Groom's Family</button>
-        <button class="tab-btn bride-tab"         data-side="bride">Bride's Family</button>
-      </div>
-      <!-- single-mode header -->
-      <div class="pane-header single-pane-header">
+      <!-- editor header -->
+      <div class="pane-header">
         <span class="pane-dot"></span>
         <span id="editor-label">Mermaid Editor</span>
       </div>
@@ -112,8 +90,8 @@
     <!-- PREVIEW PANE -->
     <div class="preview-pane">
 
-      <!-- single mode header -->
-      <div class="pane-header single-only">
+      <!-- preview header -->
+      <div class="pane-header">
         <span class="pane-dot"></span>
         Tree Preview
         <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">
@@ -121,8 +99,8 @@
         </span>
       </div>
 
-      <!-- SINGLE CANVAS VIEWPORT -->
-      <div class="canvas-viewport single-only" id="vp-single">
+      <!-- CANVAS VIEWPORT -->
+      <div class="canvas-viewport" id="vp-single">
         <div class="empty-state" id="es-single">
           Write Mermaid code and press <strong>Compile</strong>,<br>or click <strong>Load Sample</strong> to get started.
         </div>
@@ -135,50 +113,6 @@
           <button class="ctrl-btn" data-action="reset"      title="Reset to 100%">1:1</button>
           <div class="ctrl-sep"></div>
           <button class="ctrl-btn" data-action="fullscreen" title="Fullscreen">[ ]</button>
-        </div>
-      </div>
-
-      <!-- DUAL MODE HEADERS -->
-      <div class="dual-panel-headers">
-        <div class="dual-panel-header groom-header">
-          Groom's Family Tree
-          <span style="margin-left:auto;font-size:10px;font-weight:400;opacity:.6">Scroll · Drag · Pinch</span>
-        </div>
-        <div class="dual-panel-header bride-header">
-          Bride's Family Tree
-          <span style="margin-left:auto;font-size:10px;font-weight:400;opacity:.6">Scroll · Drag · Pinch</span>
-        </div>
-      </div>
-
-      <!-- DUAL CANVAS VIEWPORTS -->
-      <div class="dual-previews">
-        <!-- GROOM VIEWPORT -->
-        <div class="canvas-viewport" id="vp-groom">
-          <div class="empty-state" id="es-groom">Groom's family tree will appear here</div>
-          <div class="canvas-controls">
-            <button class="ctrl-btn" data-action="zoom-out" title="Zoom Out">&#8722;</button>
-            <span class="zoom-label">100%</span>
-            <button class="ctrl-btn" data-action="zoom-in"  title="Zoom In">+</button>
-            <div class="ctrl-sep"></div>
-            <button class="ctrl-btn" data-action="fit"        title="Fit to screen">Fit</button>
-            <button class="ctrl-btn" data-action="reset"      title="Reset to 100%">1:1</button>
-            <div class="ctrl-sep"></div>
-            <button class="ctrl-btn" data-action="fullscreen" title="Fullscreen">[ ]</button>
-          </div>
-        </div>
-        <!-- BRIDE VIEWPORT -->
-        <div class="canvas-viewport" id="vp-bride">
-          <div class="empty-state" id="es-bride">Bride's family tree will appear here</div>
-          <div class="canvas-controls">
-            <button class="ctrl-btn" data-action="zoom-out" title="Zoom Out">&#8722;</button>
-            <span class="zoom-label">100%</span>
-            <button class="ctrl-btn" data-action="zoom-in"  title="Zoom In">+</button>
-            <div class="ctrl-sep"></div>
-            <button class="ctrl-btn" data-action="fit"        title="Fit to screen">Fit</button>
-            <button class="ctrl-btn" data-action="reset"      title="Reset to 100%">1:1</button>
-            <div class="ctrl-sep"></div>
-            <button class="ctrl-btn" data-action="fullscreen" title="Fullscreen">[ ]</button>
-          </div>
         </div>
       </div>
 

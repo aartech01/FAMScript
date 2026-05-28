@@ -1,6 +1,6 @@
 /* ═══════════════ EVENT DEFINITIONS ═══════════════ */
 const EVENTS = {
-  wedding:     { name: 'Wedding',       color: '#C8FF3E', ecLight: 'rgba(200,255,62,0.07)',   dual: true,  combined: true, desc: "Enter groom's and bride's trees separately — compiled as one combined canvas" },
+  wedding:     { name: 'Wedding',       color: '#C8FF3E', ecLight: 'rgba(200,255,62,0.07)',   dual: false, desc: 'Build the combined family tree for the wedding ceremony' },
   mundan:      { name: 'Mundan',        color: '#38bdf8', ecLight: 'rgba(56,189,248,0.07)',  dual: false, desc: "Build the child's family tree for the Mundan ceremony" },
   namkaran:    { name: 'Namkaran',      color: '#60a5fa', ecLight: 'rgba(96,165,250,0.07)',  dual: false, desc: "Build the naming ceremony family tree" },
   annaprashan: { name: 'Annaprashan',   color: '#fb923c', ecLight: 'rgba(251,146,60,0.07)',  dual: false, desc: 'Build the family tree for the first-rice feeding ceremony' },
@@ -18,9 +18,62 @@ const EVENTS = {
    crossings you get when two parents both point at two children directly. */
 const SAMPLES = {
 
-  // ── Wedding ──────────────────────────────────────────────
-  // Groom/bride are unmarried in their own panel; combineWeddingMermaid() joins
-  // them through CP_WED_COUPLE and adds the shared child when both sides exist.
+  // ── Wedding (combined) ───────────────────────────────────
+  wedding: `graph TB
+
+  GROOM_PGF_P2_001["Groom father's Father"]
+  GROOM_PGM_P2_001["Groom father's Mother"]
+  GROOM_MGF_P2_002["Groom Mother's Father"]
+  GROOM_MGM_P2_002["Groom Mother's Mother"]
+  GROOM_DAD_P1_001["Groom Father"]
+  GROOM_MOM_P1_001["Groom Mother"]
+  GROOM_BRO_G0_002["Groom's Brother"]
+  GROOM_G0_001["Groom"]
+  CP_GROOM_PG(( ))
+  CP_GROOM_MG(( ))
+  CP_GROOM_DM(( ))
+
+  GROOM_PGF_P2_001 ---|"father"| CP_GROOM_PG
+  GROOM_PGM_P2_001 ---|"mother"| CP_GROOM_PG
+  CP_GROOM_PG -->|"son"| GROOM_DAD_P1_001
+  GROOM_MGF_P2_002 ---|"father"| CP_GROOM_MG
+  GROOM_MGM_P2_002 ---|"mother"| CP_GROOM_MG
+  CP_GROOM_MG -->|"daughter"| GROOM_MOM_P1_001
+  GROOM_DAD_P1_001 ---|"father"| CP_GROOM_DM
+  GROOM_MOM_P1_001 ---|"mother"| CP_GROOM_DM
+  CP_GROOM_DM -->|"son"| GROOM_BRO_G0_002
+  CP_GROOM_DM -->|"son"| GROOM_G0_001
+
+  BRIDE_PGF_P2_001["Bride father's father"]
+  BRIDE_PGM_P2_001["Bride father's mother"]
+  BRIDE_MGF_P2_002["Bride Mother's father"]
+  BRIDE_MGM_P2_002["Bride Mother's mother"]
+  BRIDE_DAD_P1_001["Bride Father"]
+  BRIDE_MOM_P1_001["Bride Mother"]
+  BRIDE_SIS_G0_002["Bride's Sister"]
+  BRIDE_G0_001["Bride"]
+  CP_BRIDE_PG(( ))
+  CP_BRIDE_MG(( ))
+  CP_BRIDE_DM(( ))
+
+  BRIDE_PGF_P2_001 ---|"father"| CP_BRIDE_PG
+  BRIDE_PGM_P2_001 ---|"mother"| CP_BRIDE_PG
+  CP_BRIDE_PG -->|"son"| BRIDE_DAD_P1_001
+  BRIDE_MGF_P2_002 ---|"father"| CP_BRIDE_MG
+  BRIDE_MGM_P2_002 ---|"mother"| CP_BRIDE_MG
+  CP_BRIDE_MG -->|"daughter"| BRIDE_MOM_P1_001
+  BRIDE_DAD_P1_001 ---|"father"| CP_BRIDE_DM
+  BRIDE_MOM_P1_001 ---|"mother"| CP_BRIDE_DM
+  CP_BRIDE_DM -->|"daughter"| BRIDE_SIS_G0_002
+  CP_BRIDE_DM -->|"daughter"| BRIDE_G0_001
+
+  CP_WED_COUPLE(( ))
+  WED_CHILD_N1_001["Son or Daughter"]
+  GROOM_G0_001 ---|"husband"| CP_WED_COUPLE
+  BRIDE_G0_001 ---|"wife"| CP_WED_COUPLE
+  CP_WED_COUPLE -->|"child"| WED_CHILD_N1_001`,
+
+  // ── Wedding individual (kept for reference) ──────────────
   groom: `graph TB
 
   GROOM_PGF_P2_001["Groom father's Father"]
@@ -280,8 +333,6 @@ const mermaids = { single: '',   groom: '',   bride: '' };
 /* ═══════════════ ELEMENTS ═══════════════ */
 const editor      = document.getElementById('editor');
 const vpSingle    = document.getElementById('vp-single');
-const vpGroom     = document.getElementById('vp-groom');
-const vpBride     = document.getElementById('vp-bride');
 const consoleEl   = document.getElementById('console-panel');
 const themeSelect = document.getElementById('theme-select');
 const eventSelect = document.getElementById('event-select');
@@ -290,8 +341,6 @@ const statusBadge = document.getElementById('status-badge');
 
 /* ═══════════════ CANVAS CONTROLLERS ═══════════════ */
 const ctrlSingle = new CanvasController(vpSingle);
-const ctrlGroom  = new CanvasController(vpGroom);
-const ctrlBride  = new CanvasController(vpBride);
 
 /* ═══════════════ MERMAID INIT ═══════════════ */
 mermaid.initialize({ startOnLoad: false, theme: currentTheme, securityLevel: 'loose' });
@@ -306,35 +355,13 @@ function switchEvent(key) {
   document.body.style.setProperty('--ec',      ev.color);
   document.body.style.setProperty('--ec-light', ev.ecLight);
 
-  document.body.classList.toggle('mode-wedding', ev.dual);
-  document.body.classList.toggle('mode-single',  !ev.dual);
-
-  const showDualExports = ev.dual && !ev.combined;
-  document.getElementById('exports-single').style.display  = showDualExports ? 'none' : 'flex';
-  document.getElementById('exports-wedding').style.display = showDualExports ? 'flex' : 'none';
-  document.getElementById('exports-single').style.flexDirection = 'column';
-
-  document.getElementById('event-pill').textContent = ev.name;
-  document.getElementById('event-desc').textContent  = ev.desc;
-  const dualBadge = document.getElementById('event-dual-badge');
-  dualBadge.style.display = 'none';
-  document.getElementById('editor-label').textContent = 'Mermaid Editor';
-
-  if (ev.dual) {
-    activeSide = 'groom';
-    setActiveTab('groom');
-    editor.value = scripts.groom;
-  } else {
-    editor.value = scripts.single;
-  }
+  editor.value = scripts.single;
 
   resetPreviews();
 }
 
 function resetPreviews() {
-  _restoreEmptyState(vpSingle, 'Write Mermaid code and press <strong>▶ Compile</strong>,<br>or click <strong>Load Sample</strong> to get started.');
-  _restoreEmptyState(vpGroom,  'Groom\'s family tree will appear here');
-  _restoreEmptyState(vpBride,  'Bride\'s family tree will appear here');
+  _restoreEmptyState(vpSingle, 'Write Mermaid code and press <strong>&#9654; Compile</strong>,<br>or click <strong>Load Sample</strong> to get started.');
   setStatus('idle');
 }
 
@@ -598,10 +625,10 @@ function _preprocessMermaid(raw) {
     const t = line.trim();
     if (t.startsWith('//')) return false;
     // Strip auto-generated coloured fill lines
-    if (/^style\s+\w+\s+fill:#(?:3b82f6|ec4899|6b7280)/i.test(t)) return false;
+    if (/^style\s+\w+\s+fill:#(?:3b82f6|ec4899|6b7280|2563eb|e11d48|C8FF3E)/i.test(t)) return false;
     // Strip our managed classDef/class lines — we re-add fresh below
-    if (/^classDef\s+(?:personNode|mainChar|coupleNode)\b/.test(t)) return false;
-    if (/^class\s+[\w,\s]+(?:personNode|mainChar|coupleNode)\s*$/.test(t)) return false;
+    if (/^classDef\s+(?:personNode|mainChar|groomNode|brideNode|coupleNode)\b/.test(t)) return false;
+    if (/^class\s+[\w,\s]+(?:personNode|mainChar|groomNode|brideNode|coupleNode)\s*$/.test(t)) return false;
     // Strip direction overrides and invisible-link lines — both cause Dagre edge routing chaos
     if (/^direction\s+(LR|RL|BT|TB)\s*$/i.test(t)) return false;
     if (t.includes('~~~')) return false;
@@ -622,17 +649,33 @@ function _preprocessMermaid(raw) {
   let result = cleanLines.join('\n').trim();
 
   if (nodeIds.length > 0 || coupleIds.length > 0) {
-    // Main characters: all G0 nodes matching ROLE_G0_NNN (handles single and combined wedding)
+    // Main characters: all G0 nodes matching ROLE_G0_NNN
     const mainIds    = nodeIds.filter(id => /^[^_]+_G0_\d+$/.test(id));
     const regularIds = nodeIds.filter(id => !mainIds.includes(id));
 
+    // Separate groom / bride G0 nodes for wedding styling
+    const groomG0Ids = mainIds.filter(id => id.startsWith('GROOM_'));
+    const brideG0Ids = mainIds.filter(id => id.startsWith('BRIDE_'));
+    const otherG0Ids = mainIds.filter(id => !id.startsWith('GROOM_') && !id.startsWith('BRIDE_'));
+    const isWeddingPair = groomG0Ids.length > 0 && brideG0Ids.length > 0;
+
     result += '\n\n  classDef personNode fill:#fff,color:#1a1a1a,stroke:#555,stroke-width:1.5px\n';
-    result +=   '  classDef mainChar fill:#dbeafe,color:#1a3a5c,stroke:#2563eb,stroke-width:2.5px\n';
+    result +=   '  classDef mainChar fill:#C8FF3E,color:#08080e,stroke:#8dc400,stroke-width:3.5px\n';
+    result +=   '  classDef groomNode fill:#2563eb,color:#fff,stroke:#1e3a8a,stroke-width:4px\n';
+    result +=   '  classDef brideNode fill:#e11d48,color:#fff,stroke:#881337,stroke-width:4px\n';
     result +=   '  classDef coupleNode fill:#555,stroke:#444,stroke-width:1.5px\n';
+
     if (regularIds.length > 0) result += '  class ' + regularIds.join(',') + ' personNode\n';
-    if (mainIds.length > 0)    result += '  class ' + mainIds.join(',') + ' mainChar\n';
-    else                       result  = result.trimEnd() + '\n';
-    if (coupleIds.length > 0)  result += '  class ' + coupleIds.join(',') + ' coupleNode';
+
+    if (isWeddingPair) {
+      result += '  class ' + groomG0Ids.join(',') + ' groomNode\n';
+      result += '  class ' + brideG0Ids.join(',') + ' brideNode\n';
+      if (otherG0Ids.length > 0) result += '  class ' + otherG0Ids.join(',') + ' mainChar\n';
+    } else {
+      if (mainIds.length > 0) result += '  class ' + mainIds.join(',') + ' mainChar\n';
+    }
+
+    if (coupleIds.length > 0) result += '  class ' + coupleIds.join(',') + ' coupleNode';
     else                       result  = result.trimEnd();
   }
 
@@ -669,14 +712,8 @@ eventSelect.addEventListener('change', () => switchEvent(eventSelect.value));
 
 themeSelect.addEventListener('change', async () => {
   currentTheme = themeSelect.value;
-  const ev = EVENTS[currentEvent];
-  const isDualOnly = ev?.dual && !ev?.combined;
-  if (isDualOnly) {
-    if (mermaids.groom) await renderInto(vpGroom, mermaids.groom, ctrlGroom).catch(() => {});
-    if (mermaids.bride) await renderInto(vpBride, mermaids.bride, ctrlBride).catch(() => {});
-  } else {
-    if (mermaids.single) await renderInto(vpSingle, mermaids.single, ctrlSingle).catch(() => {});
-  }
+  mermaid.initialize({ startOnLoad: false, theme: currentTheme, securityLevel: 'loose' });
+  if (mermaids.single) await renderInto(vpSingle, mermaids.single, ctrlSingle).catch(() => {});
 });
 
 document.getElementById('btn-compile').addEventListener('click', compile);
@@ -714,32 +751,11 @@ document.getElementById('btn-export-png').addEventListener('click', () => { cons
 document.getElementById('btn-export-jpg').addEventListener('click', () => { const s = getSvg(vpSingle); if (s) exportJPG(s); });
 document.getElementById('btn-export-md').addEventListener('click',  () => { mermaids.single ? exportMarkdown(mermaids.single, projName.value) : alert('Compile the tree first.'); });
 
-document.getElementById('btn-export-groom-svg').addEventListener('click', () => { const s = getSvg(vpGroom); if (s) exportSVG(s); });
-document.getElementById('btn-export-groom-png').addEventListener('click', () => { const s = getSvg(vpGroom); if (s) exportPNG(s); });
-document.getElementById('btn-export-groom-md').addEventListener('click',  () => { mermaids.groom ? exportMarkdown(mermaids.groom, projName.value, 'groom') : alert('Compile the groom\'s tree first.'); });
-
-document.getElementById('btn-export-bride-svg').addEventListener('click', () => { const s = getSvg(vpBride); if (s) exportSVG(s); });
-document.getElementById('btn-export-bride-png').addEventListener('click', () => { const s = getSvg(vpBride); if (s) exportPNG(s); });
-document.getElementById('btn-export-bride-md').addEventListener('click',  () => { mermaids.bride ? exportMarkdown(mermaids.bride, projName.value, 'bride') : alert('Compile the bride\'s tree first.'); });
 
 document.getElementById('btn-export-json').addEventListener('click', () => {
-  const ev = EVENTS[currentEvent];
-  let payload;
-  if (ev?.dual && ev?.combined) {
-    // Save raw groom/bride scripts so they can be re-imported separately
-    payload = { projectName: projName.value, event: currentEvent, version: '2.0',
-                groom: scripts.groom || '', bride: scripts.bride || '',
-                combined: mermaids.single || '',
-                settings: { theme: currentTheme } };
-  } else if (ev?.dual) {
-    payload = { projectName: projName.value, event: currentEvent, version: '2.0',
-                groom: mermaids.groom || '', bride: mermaids.bride || '',
-                settings: { theme: currentTheme } };
-  } else {
-    payload = { projectName: projName.value, event: currentEvent, version: '2.0',
-                mermaid: mermaids.single || '',
-                settings: { theme: currentTheme } };
-  }
+  const payload = { projectName: projName.value, event: currentEvent, version: '2.0',
+                    mermaid: mermaids.single || '',
+                    settings: { theme: currentTheme } };
   downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), 'family-tree.json');
 });
 
@@ -1359,8 +1375,7 @@ document.querySelector('.sidebar').addEventListener('click', e => {
 
 /* ═══════════════ BOOT ═══════════════ */
 switchEvent('wedding');
-scripts.groom = SAMPLES.groom;
-scripts.bride = SAMPLES.bride;
-editor.value  = SAMPLES.groom;
+scripts.single = SAMPLES.wedding;
+editor.value   = SAMPLES.wedding;
 setStatus('compiling');
-compileWeddingCombined();
+compile();

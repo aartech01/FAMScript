@@ -32,7 +32,7 @@
   --font-mono: 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
 
   --header-h:  56px;
-  --event-h:   34px;
+  --event-h:   0px;
   --sidebar-w: 190px;
   --console-h: 140px;
 }
