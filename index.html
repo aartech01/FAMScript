@@ -82,9 +82,35 @@
       <div class="pane-header">
         <span class="pane-dot"></span>
         <span id="editor-label">Mermaid Editor</span>
+        <button id="btn-settings" class="icon-btn" title="Editor Settings">&#9881;</button>
+        <div id="settings-popover" class="settings-popover" hidden>
+          <div class="settings-row">
+            <label for="set-fontsize-val">Font Size</label>
+            <div class="stepper">
+              <button id="set-fontsize-dec" type="button">&minus;</button>
+              <span id="set-fontsize-val">13</span>
+              <button id="set-fontsize-inc" type="button">+</button>
+            </div>
+          </div>
+          <div class="settings-row">
+            <label for="set-wordwrap">Word Wrap</label>
+            <label class="switch"><input type="checkbox" id="set-wordwrap"><span class="switch-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <label for="set-tabsize">Tab Size</label>
+            <select id="set-tabsize"><option value="2">2</option><option value="4">4</option></select>
+          </div>
+          <div class="settings-row">
+            <label for="set-linenumbers">Line Numbers</label>
+            <label class="switch"><input type="checkbox" id="set-linenumbers" checked><span class="switch-slider"></span></label>
+          </div>
+          <div class="settings-row">
+            <label for="set-activeline">Highlight Active Line</label>
+            <label class="switch"><input type="checkbox" id="set-activeline" checked><span class="switch-slider"></span></label>
+          </div>
+        </div>
       </div>
-      <textarea id="editor" spellcheck="false" autocomplete="off"
-        placeholder="graph TB&#10;  A[&quot;Person A&quot;] --&gt;|&quot;parent&quot;| B[&quot;Person B&quot;]&#10;&#10;%% Or click Load Sample to get started"></textarea>
+      <div id="editor-host"></div>
     </div>
 
     <!-- PREVIEW PANE -->
@@ -120,14 +146,34 @@
   </div><!-- /work-area -->
 </main>
 
-<!-- CONSOLE -->
+<!-- CONSOLE / PROBLEMS -->
 <footer>
   <div class="console-header">
     <span class="console-dot" id="console-dot"></span>
-    Console &middot; Validation Output
+    Problems &middot; Validation Output
+    <span class="badge-counts">
+      <span class="cnt-err" id="cnt-err" hidden></span>
+      <span class="cnt-warn" id="cnt-warn" hidden></span>
+    </span>
   </div>
   <div id="console-panel"></div>
 </footer>
+
+<!-- STATUS BAR -->
+<div class="statusbar" id="statusbar">
+  <div class="sb-left">
+    <button class="sb-item" id="sb-problems" title="Toggle Problems panel">
+      <span>&#8855; <span id="sb-err-count">0</span></span>
+      <span>&#9888; <span id="sb-warn-count">0</span></span>
+    </button>
+  </div>
+  <div class="sb-right">
+    <span class="sb-item" id="sb-position">Ln 1, Col 1</span>
+    <span class="sb-item" id="sb-tabsize">Spaces: 2</span>
+    <span class="sb-item">Mermaid</span>
+    <span class="sb-item">UTF-8</span>
+  </div>
+</div>
 
 <!-- MERMAID CODE MODAL -->
 <div id="mermaid-modal" class="modal" style="display:none">
@@ -596,12 +642,31 @@ DAD -.->|"nephew"| FRIEND       %% step / cousin / nephew (dashed)</pre></div>
   </div>
 </div>
 
+<!-- COMMAND PALETTE -->
+<div id="cmdk-overlay" class="cmdk-overlay" style="display:none">
+  <div class="cmdk-box">
+    <input id="cmdk-input" class="cmdk-input" type="text" placeholder="Type a command…" autocomplete="off" spellcheck="false">
+    <div id="cmdk-list" class="cmdk-list"></div>
+  </div>
+</div>
+
 <!-- SCRIPTS -->
 <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+<script>
+  // Promise-based handoff — NOT an event. CodeMirror loads as an ES module
+  // (async by nature), but app.js is a plain classic script; a dispatched
+  // event could fire before app.js attaches a listener on a fast/cached load.
+  // Assigning this promise synchronously here has no such race — app.js just
+  // awaits it, and an already-resolved promise resolves immediately.
+  window.__famScriptEditorReady = import('./editor.js')
+    .then(mod => { window.createFamScriptEditor = mod.createFamScriptEditor; })
+    .catch(err => { window.__famScriptEditorLoadError = err; });
+</script>
 <script src="utils.js"></script>
 <script src="mermaidGenerator.js"></script>
 <script src="importer.js"></script>
 <script src="export.js"></script>
+<script src="famtree.js"></script>
 <script src="canvas.js"></script>
 <script src="app.js"></script>
 <script src="converter.js"></script>
