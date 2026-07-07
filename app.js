@@ -329,7 +329,7 @@ const SAMPLES = {
 /* ═══════════════ STATE ═══════════════ */
 let currentEvent  = 'wedding';
 let activeSide    = 'groom';
-let currentTheme  = 'dark';
+const MERMAID_THEME = 'dark';
 let renderCounter = 0;
 
 const scripts  = { single: '', groom: '',  bride: '' };
@@ -342,7 +342,6 @@ const editor      = createFamScriptEditor(document.getElementById('editor-host')
 });
 const vpSingle    = document.getElementById('vp-single');
 const consoleEl   = document.getElementById('console-panel');
-const themeSelect = document.getElementById('theme-select');
 const eventSelect = document.getElementById('event-select');
 const projName    = document.getElementById('project-name');
 const statusBadge = document.getElementById('status-badge');
@@ -403,7 +402,7 @@ document.querySelectorAll('.view-toggle-btn').forEach(btn => {
 });
 
 /* ═══════════════ MERMAID INIT ═══════════════ */
-mermaid.initialize({ startOnLoad: false, theme: currentTheme, securityLevel: 'loose' });
+mermaid.initialize({ startOnLoad: false, theme: MERMAID_THEME, securityLevel: 'loose' });
 
 /* ═══════════════ EVENT SWITCHING ═══════════════ */
 function switchEvent(key) {
@@ -628,7 +627,7 @@ async function compileWeddingCombined() {
 /* ═══════════════ RENDER ═══════════════ */
 async function renderInto(vp, code, ctrl) {
   mermaid.initialize({
-    startOnLoad: false, theme: currentTheme, securityLevel: 'loose',
+    startOnLoad: false, theme: MERMAID_THEME, securityLevel: 'loose',
     flowchart: { curve: 'linear', nodeSpacing: 80, rankSpacing: 110, padding: 30 }
   });
   const uid = 'mmd_' + (++renderCounter) + '_' + Date.now();
@@ -843,12 +842,6 @@ document.addEventListener('keydown', e => {
 
 eventSelect.addEventListener('change', () => switchEvent(eventSelect.value));
 
-themeSelect.addEventListener('change', async () => {
-  currentTheme = themeSelect.value;
-  mermaid.initialize({ startOnLoad: false, theme: currentTheme, securityLevel: 'loose' });
-  if (mermaids.single) await renderInto(vpSingle, mermaids.single, ctrlSingle).catch(() => {});
-});
-
 document.getElementById('btn-compile').addEventListener('click', compile);
 
 document.getElementById('btn-sample').addEventListener('click', () => {
@@ -888,7 +881,7 @@ document.getElementById('btn-export-md').addEventListener('click',  () => { merm
 document.getElementById('btn-export-json').addEventListener('click', () => {
   const payload = { projectName: projName.value, event: currentEvent, version: '2.0',
                     mermaid: mermaids.single || '',
-                    settings: { theme: currentTheme } };
+                    settings: { theme: MERMAID_THEME } };
   downloadBlob(new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' }), 'family-tree.json');
 });
 

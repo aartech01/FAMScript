@@ -92,7 +92,7 @@ parser.js → validator.js → mermaidGenerator.js → Mermaid renderer → expo
 | `mermaidGenerator.js` | Internal JSON → Mermaid `graph TB` syntax |
 | `importer.js` | Mermaid / JSON → internal JSON model |
 | `export.js` | SVG, PNG, JPG, Markdown, JSON export |
-| `app.js` | UI wiring, pipeline orchestration, theme switching |
+| `app.js` | UI wiring, pipeline orchestration |
 
 ---
 

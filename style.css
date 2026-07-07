@@ -1054,10 +1054,9 @@ kbd {
     --sidebar-w: 210px;
   }
 
-  /* Show hamburger, hide project name + theme picker */
+  /* Show hamburger, hide project name */
   #btn-menu { display: flex; }
   #project-name { display: none; }
-  #theme-select { display: none; }
 
   /* Sidebar becomes a fixed drawer */
   .sidebar {

@@ -98,7 +98,6 @@ The interface is divided into four zones:
 | **Event Dropdown** | Select the Indian ceremony type (e.g., Wedding, Mundan) |
 | **Project Name field** | Name used as a prefix when exporting files |
 | **Status Badge** | Real-time compile status: Ready / Compiling / OK / Warnings / Error |
-| **Theme Dropdown** | Switch the Mermaid diagram theme (Dark, Default, Forest, Neutral, Base) |
 | **? Help** | Opens the in-app FamScript Reference Guide |
 | **▶ Compile** | Trigger compilation manually |
 
