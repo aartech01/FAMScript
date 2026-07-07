@@ -21,14 +21,14 @@
       <span class="logo-text">Fam<span>Script</span></span>
     </div>
     <select id="event-select" title="Select ceremony / event">
-      <option value="wedding">Wedding</option>
-      <option value="mundan">Mundan</option>
-      <option value="namkaran">Namkaran</option>
-      <option value="annaprashan">Annaprashan</option>
-      <option value="vastu">Vastu Puja</option>
-      <option value="upanayana">Upanayana</option>
-      <option value="godhbharai">Godh Bharai</option>
-      <option value="birthday">Birthday</option>
+      <option value="wedding">Wedding (विवाह)</option>
+      <option value="mundan">First Haircut (मुंडन)</option>
+      <option value="namkaran">Naming Ceremony (नामकरण)</option>
+      <option value="annaprashan">First Rice Feeding (अन्नप्राशन)</option>
+      <option value="vastu">House Warming (वास्तु पूजा)</option>
+      <option value="upanayana">Sacred Thread Ceremony (उपनयन)</option>
+      <option value="godhbharai">Baby Shower (गोद भराई)</option>
+      <option value="birthday">Birthday (जन्मदिन)</option>
       <option value="custom">Custom Event</option>
     </select>
     <input type="text" id="project-name" placeholder="Project name" value="My Family Tree">
@@ -73,6 +73,9 @@
     <button id="btn-converter">⇄ Converter</button>
   </nav>
 
+  <!-- SIDEBAR RESIZE HANDLE -->
+  <div class="sidebar-resizer" id="sidebar-resizer" title="Drag to resize sidebar"></div>
+
   <!-- WORK AREA -->
   <div class="work-area">
 
@@ -113,6 +116,9 @@
       <div id="editor-host"></div>
     </div>
 
+    <!-- EDITOR RESIZE HANDLE -->
+    <div class="editor-resizer" id="editor-resizer" title="Drag to resize editor"></div>
+
     <!-- PREVIEW PANE -->
     <div class="preview-pane">
 
@@ -120,7 +126,11 @@
       <div class="pane-header">
         <span class="pane-dot"></span>
         Tree Preview
-        <span style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">
+        <div class="view-toggle" id="view-toggle">
+          <button type="button" class="view-toggle-btn active" data-view="tree"  title="Tree diagram view">Tree</button>
+          <button type="button" class="view-toggle-btn"        data-view="table" title="Family members table view">Table</button>
+        </div>
+        <span id="canvas-hint" style="margin-left:auto;font-size:10px;color:var(--muted);font-weight:400;text-transform:none;letter-spacing:0">
           Scroll · Drag · Pinch
         </span>
       </div>
@@ -142,12 +152,29 @@
         </div>
       </div>
 
+      <!-- MEMBER TABLE VIEW -->
+      <div class="table-view" id="table-view" hidden>
+        <div class="table-view-toolbar">
+          <input type="text" id="table-search" placeholder="Search name, ID, or role…">
+          <span id="table-count" class="table-count">0 members</span>
+        </div>
+        <div class="table-scroll">
+          <table class="member-table" id="member-table">
+            <thead>
+              <tr><th>#</th><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Role</th><th>Generation</th></tr>
+            </thead>
+            <tbody id="member-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
     </div><!-- /preview-pane -->
   </div><!-- /work-area -->
 </main>
 
 <!-- CONSOLE / PROBLEMS -->
 <footer>
+  <div class="console-resizer" id="console-resizer" title="Drag to resize console"></div>
   <div class="console-header">
     <span class="console-dot" id="console-dot"></span>
     Problems &middot; Validation Output
@@ -382,14 +409,14 @@ DAD -.->|"nephew"| FRIEND       %% step / cousin / nephew (dashed)</pre></div>
         <table class="help-table">
           <thead><tr><th>Event</th><th>Canvas</th><th>Description</th></tr></thead>
           <tbody>
-            <tr><td><strong>Wedding</strong></td><td>Combined</td><td>Groom's and bride's trees combined on one canvas — groom left, bride right</td></tr>
-            <tr><td>Mundan</td><td>Single</td><td>Child's first haircut — document the child's family</td></tr>
-            <tr><td>Namkaran</td><td>Single</td><td>Baby naming ceremony family tree</td></tr>
-            <tr><td>Annaprashan</td><td>Single</td><td>First rice-feeding ceremony</td></tr>
-            <tr><td>Vastu Puja</td><td>Single</td><td>House-warming — household family tree</td></tr>
-            <tr><td>Upanayana</td><td>Single</td><td>Sacred thread / Janeu ceremony</td></tr>
-            <tr><td>Godh Bharai</td><td>Single</td><td>Baby shower family tree</td></tr>
-            <tr><td>Birthday</td><td>Single</td><td>Birthday celebration family tree</td></tr>
+            <tr><td><strong>Wedding</strong> <span style="color:var(--muted)">(विवाह)</span></td><td>Combined</td><td>Groom's and bride's trees combined on one canvas — groom left, bride right</td></tr>
+            <tr><td>First Haircut <span style="color:var(--muted)">(मुंडन)</span></td><td>Single</td><td>Child's first haircut — document the child's family</td></tr>
+            <tr><td>Naming Ceremony <span style="color:var(--muted)">(नामकरण)</span></td><td>Single</td><td>Baby naming ceremony family tree</td></tr>
+            <tr><td>First Rice Feeding <span style="color:var(--muted)">(अन्नप्राशन)</span></td><td>Single</td><td>First rice-feeding ceremony</td></tr>
+            <tr><td>House Warming <span style="color:var(--muted)">(वास्तु पूजा)</span></td><td>Single</td><td>House-warming — household family tree</td></tr>
+            <tr><td>Sacred Thread Ceremony <span style="color:var(--muted)">(उपनयन)</span></td><td>Single</td><td>Sacred thread / Janeu ceremony</td></tr>
+            <tr><td>Baby Shower <span style="color:var(--muted)">(गोद भराई)</span></td><td>Single</td><td>Baby shower family tree</td></tr>
+            <tr><td>Birthday <span style="color:var(--muted)">(जन्मदिन)</span></td><td>Single</td><td>Birthday celebration family tree</td></tr>
             <tr><td>Custom Event</td><td>Single</td><td>Any other occasion — neutral accent</td></tr>
           </tbody>
         </table>
@@ -662,6 +689,7 @@ DAD -.->|"nephew"| FRIEND       %% step / cousin / nephew (dashed)</pre></div>
     .then(mod => { window.createFamScriptEditor = mod.createFamScriptEditor; })
     .catch(err => { window.__famScriptEditorLoadError = err; });
 </script>
+<script src="resizer.js"></script>
 <script src="utils.js"></script>
 <script src="mermaidGenerator.js"></script>
 <script src="importer.js"></script>

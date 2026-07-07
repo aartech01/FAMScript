@@ -45,12 +45,13 @@
 
   --radius:    3px;
   --radius-lg: 6px;
-  --font-ui:   -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-ui:   -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Nirmala UI', 'Noto Sans Devanagari', system-ui, sans-serif;
   --font-mono: Consolas, 'Cascadia Code', 'Fira Code', 'Courier New', monospace;
 
   --header-h:    56px;
   --event-h:     0px;
   --sidebar-w:   190px;
+  --editor-w:    360px;
   --console-h:   140px;
   --statusbar-h: 22px;
 }
@@ -294,6 +295,28 @@ body.sidebar-open .sidebar-overlay { display: block; }
 .sidebar .btn-event { color: var(--accent); font-weight: 600; }
 .sidebar .btn-event:hover { background: rgba(55,148,255,0.1); }
 
+/* ── sidebar resize handle ── */
+.sidebar-resizer {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 31;
+  touch-action: none;
+}
+.sidebar-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 1px;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background .15s;
+}
+.sidebar-resizer:hover::after,
+.sidebar-resizer.resizing::after { background: var(--accent); }
+
 /* ── work area ── */
 .work-area {
   flex: 1;
@@ -304,13 +327,36 @@ body.sidebar-open .sidebar-overlay { display: block; }
 
 /* ── editor pane ── */
 .editor-pane {
-  width: 360px;
+  width: var(--editor-w);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   border-right: 1px solid var(--border);
   background: var(--surface);
 }
+
+/* ── editor resize handle ── */
+.editor-resizer {
+  width: 5px;
+  flex-shrink: 0;
+  cursor: col-resize;
+  background: transparent;
+  position: relative;
+  z-index: 31;
+  touch-action: none;
+  margin-left: -1px;
+}
+.editor-resizer::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; left: 1px;
+  width: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background .15s;
+}
+.editor-resizer:hover::after,
+.editor-resizer.resizing::after { background: var(--accent); }
 
 .pane-header {
   height: 34px;
@@ -545,6 +591,97 @@ body.sidebar-open .sidebar-overlay { display: block; }
   cursor: default;
 }
 
+/* ── tree / table view toggle ── */
+.view-toggle {
+  display: flex; align-items: center; gap: 2px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px;
+  margin-left: 10px;
+  flex-shrink: 0;
+}
+.view-toggle-btn {
+  padding: 3px 12px;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: .4px; text-transform: uppercase;
+  background: transparent;
+  color: var(--muted);
+  border-radius: 16px;
+}
+.view-toggle-btn.active { background: var(--btn-bg); color: #fff; }
+.view-toggle-btn:hover:not(.active) { color: var(--text); background: var(--surface3); }
+
+/* ── member table view ── */
+.table-view {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+}
+.table-view[hidden] { display: none; }
+
+.table-view-toolbar {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 13px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+#table-search {
+  flex: 1; max-width: 280px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  font-size: 12.5px;
+  outline: none;
+  font-family: var(--font-ui);
+}
+#table-search:focus { border-color: var(--accent); }
+.table-count {
+  margin-left: auto;
+  font-size: 11px; font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.table-scroll { flex: 1; min-height: 0; overflow: auto; padding: 0 13px 13px; }
+
+.member-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.member-table thead th {
+  position: sticky; top: 0;
+  text-align: left; padding: 8px 10px;
+  background: var(--surface2); color: var(--muted);
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .5px;
+  border-bottom: 1px solid var(--border);
+  z-index: 1;
+}
+.member-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+.member-table tbody tr:hover { background: var(--surface2); }
+.member-table tr.member-ego td { background: var(--ec-light); }
+.member-table code {
+  font-family: var(--font-mono); font-size: 11.5px;
+  color: var(--accent);
+  background: rgba(55,148,255,.08);
+  padding: 1px 6px; border-radius: 4px;
+}
+.ego-badge {
+  display: inline-block;
+  font-size: 9px; font-weight: 800; letter-spacing: .5px;
+  color: #fff; background: var(--accent);
+  padding: 1px 6px; border-radius: 8px;
+  margin-left: 5px;
+}
+.table-empty { text-align: center !important; color: var(--muted); padding: 30px !important; white-space: normal !important; }
+
 .empty-state {
   color: var(--muted); font-size: 13px;
   text-align: center; padding: 50px 20px;
@@ -581,7 +718,29 @@ footer {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: relative;
 }
+.console-resizer {
+  height: 5px;
+  flex-shrink: 0;
+  cursor: row-resize;
+  background: transparent;
+  position: relative;
+  z-index: 31;
+  touch-action: none;
+  margin-top: -1px;
+}
+.console-resizer::after {
+  content: '';
+  position: absolute;
+  left: 0; right: 0; top: 1px;
+  height: 3px;
+  border-radius: 2px;
+  background: transparent;
+  transition: background .15s;
+}
+.console-resizer:hover::after,
+.console-resizer.resizing::after { background: var(--accent); }
 .console-header {
   height: 28px;
   display: flex; align-items: center;
@@ -882,8 +1041,7 @@ kbd {
 
 /* Tablet ≤ 1024px */
 @media (max-width: 1024px) {
-  :root { --sidebar-w: 170px; }
-  .editor-pane { width: 300px; }
+  :root { --sidebar-w: 170px; --editor-w: 300px; }
   #project-name { width: 120px; }
 }
 
@@ -911,9 +1069,12 @@ kbd {
     border-right: 1px solid var(--border);
   }
   body.sidebar-open .sidebar { transform: translateX(0); }
+  /* Drawer isn't part of the flex flow in any meaningful width sense — hide the drag handle */
+  .sidebar-resizer { display: none; }
 
-  /* Stack editor + preview */
+  /* Stack editor + preview — horizontal resize no longer applies */
   .work-area { flex-direction: column; }
+  .editor-resizer { display: none; }
 
   .editor-pane {
     width: 100%;

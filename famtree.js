@@ -186,6 +186,8 @@
       p.name   = name;
       p.ego    = isEgo(p.id);
       p.gender = gender;
+      p.role   = role;
+      p.meta   = meta;
       p.sub    = (p.ego && /^GROOM_/i.test(p.id)) ? 'The Groom'
                : (p.ego && /^BRIDE_/i.test(p.id)) ? 'The Bride'
                : (role || meta || '');
@@ -471,5 +473,36 @@
     return draw(model);
   }
 
-  global.FamTree = { render };
+  /* Flat member list for the Table View — same parse used by the tree
+     renderer, but stops before layout/draw. Generation is expressed
+     relative to the G0 ego node (positive = ancestor, negative = descendant)
+     so it lines up with the ROLE_P1/ROLE_N1 naming convention. */
+  function listPersons(code) {
+    const model = parse(code);
+    if (!model) return [];
+    assignRanks(model);
+    decorate(model);
+
+    const list = Array.from(model.persons.values());
+    const ego = list.find(p => p.ego);
+    const egoRank = ego ? model.rank.get(ego.id) : 0;
+
+    return list
+      .map(p => {
+        const ageMatch = p.meta && p.meta.match(/\d+/);
+        return {
+          id:         p.id,
+          name:       p.name,
+          age:        ageMatch ? ageMatch[0] : '',
+          gender:     p.gender || '',
+          role:       p.role || '',
+          generation: egoRank - model.rank.get(p.id),
+          ego:        !!p.ego,
+          order:      p.order,
+        };
+      })
+      .sort((a, b) => (b.generation - a.generation) || (a.order - b.order));
+  }
+
+  global.FamTree = { render, listPersons };
 })(typeof window !== 'undefined' ? window : globalThis);

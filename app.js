@@ -5,15 +5,15 @@ async function __famscriptBoot() {
 
 /* ═══════════════ EVENT DEFINITIONS ═══════════════ */
 const EVENTS = {
-  wedding:     { name: 'Wedding',       color: '#C8FF3E', ecLight: 'rgba(200,255,62,0.07)',   dual: false, desc: 'Build the combined family tree for the wedding ceremony' },
-  mundan:      { name: 'Mundan',        color: '#38bdf8', ecLight: 'rgba(56,189,248,0.07)',  dual: false, desc: "Build the child's family tree for the Mundan ceremony" },
-  namkaran:    { name: 'Namkaran',      color: '#60a5fa', ecLight: 'rgba(96,165,250,0.07)',  dual: false, desc: "Build the naming ceremony family tree" },
-  annaprashan: { name: 'Annaprashan',   color: '#fb923c', ecLight: 'rgba(251,146,60,0.07)',  dual: false, desc: 'Build the family tree for the first-rice feeding ceremony' },
-  vastu:       { name: 'Vastu Puja',    color: '#34d399', ecLight: 'rgba(52,211,153,0.07)',  dual: false, desc: 'Build the household family tree for the Vastu Puja' },
-  upanayana:   { name: 'Upanayana',     color: '#818cf8', ecLight: 'rgba(129,140,248,0.07)', dual: false, desc: 'Build the family tree for the sacred thread ceremony' },
-  godhbharai:  { name: 'Godh Bharai',   color: '#e879f9', ecLight: 'rgba(232,121,249,0.07)', dual: false, desc: 'Build the family tree for the baby shower ceremony' },
-  birthday:    { name: 'Birthday',      color: '#fbbf24', ecLight: 'rgba(251,191,36,0.07)',  dual: false, desc: 'Build the family tree for the birthday celebration' },
-  custom:      { name: 'Custom Event',  color: '#94a3b8', ecLight: 'rgba(148,163,184,0.07)', dual: false, desc: 'Build a family tree for your custom ceremony or event' },
+  wedding:     { name: 'Wedding (विवाह)',                    color: '#C8FF3E', ecLight: 'rgba(200,255,62,0.07)',   dual: false, desc: 'Build the combined family tree for the wedding ceremony' },
+  mundan:      { name: 'First Haircut (मुंडन)',              color: '#38bdf8', ecLight: 'rgba(56,189,248,0.07)',  dual: false, desc: "Build the child's family tree for the Mundan ceremony" },
+  namkaran:    { name: 'Naming Ceremony (नामकरण)',           color: '#60a5fa', ecLight: 'rgba(96,165,250,0.07)',  dual: false, desc: "Build the naming ceremony family tree" },
+  annaprashan: { name: 'First Rice Feeding (अन्नप्राशन)',     color: '#fb923c', ecLight: 'rgba(251,146,60,0.07)',  dual: false, desc: 'Build the family tree for the first-rice feeding ceremony' },
+  vastu:       { name: 'House Warming (वास्तु पूजा)',         color: '#34d399', ecLight: 'rgba(52,211,153,0.07)',  dual: false, desc: 'Build the household family tree for the Vastu Puja' },
+  upanayana:   { name: 'Sacred Thread Ceremony (उपनयन)',     color: '#818cf8', ecLight: 'rgba(129,140,248,0.07)', dual: false, desc: 'Build the family tree for the sacred thread ceremony' },
+  godhbharai:  { name: 'Baby Shower (गोद भराई)',             color: '#e879f9', ecLight: 'rgba(232,121,249,0.07)', dual: false, desc: 'Build the family tree for the baby shower ceremony' },
+  birthday:    { name: 'Birthday (जन्मदिन)',                 color: '#fbbf24', ecLight: 'rgba(251,191,36,0.07)',  dual: false, desc: 'Build the family tree for the birthday celebration' },
+  custom:      { name: 'Custom Event',                        color: '#94a3b8', ecLight: 'rgba(148,163,184,0.07)', dual: false, desc: 'Build a family tree for your custom ceremony or event' },
 };
 
 /* ═══════════════ SAMPLES ═══════════════ */
@@ -350,6 +350,58 @@ const statusBadge = document.getElementById('status-badge');
 /* ═══════════════ CANVAS CONTROLLERS ═══════════════ */
 const ctrlSingle = new CanvasController(vpSingle);
 
+/* ═══════════════ MEMBER TABLE VIEW ═══════════════ */
+const tableViewEl   = document.getElementById('table-view');
+const tableBodyEl   = document.getElementById('member-table-body');
+const tableCountEl  = document.getElementById('table-count');
+const tableSearchEl = document.getElementById('table-search');
+const canvasHintEl  = document.getElementById('canvas-hint');
+let currentMembers = [];
+
+function genLabel(g) {
+  if (!g) return 'Gen 0';
+  return g > 0 ? `Gen +${g}` : `Gen ${g}`;
+}
+
+function renderMemberTable() {
+  currentMembers = (window.FamTree && mermaids.single) ? (window.FamTree.listPersons(mermaids.single) || []) : [];
+  applyMemberFilter();
+}
+
+function applyMemberFilter() {
+  const q = (tableSearchEl?.value || '').trim().toLowerCase();
+  const rows = !q ? currentMembers : currentMembers.filter(m =>
+    m.name.toLowerCase().includes(q) || m.id.toLowerCase().includes(q) || (m.role || '').toLowerCase().includes(q)
+  );
+
+  tableBodyEl.innerHTML = rows.length ? rows.map((m, i) => `
+    <tr class="${m.ego ? 'member-ego' : ''}">
+      <td>${i + 1}</td>
+      <td><code>${escHtml(m.id)}</code></td>
+      <td>${escHtml(m.name)}${m.ego ? '<span class="ego-badge">SELF</span>' : ''}</td>
+      <td>${m.age !== '' ? escHtml(String(m.age)) : '—'}</td>
+      <td>${m.gender || '—'}</td>
+      <td>${escHtml(m.role || '—')}</td>
+      <td>${genLabel(m.generation)}</td>
+    </tr>`).join('') : `<tr><td colspan="7" class="table-empty">${currentMembers.length ? 'No members match your search.' : 'No family members yet — compile a tree first.'}</td></tr>`;
+
+  if (tableCountEl) tableCountEl.textContent = `${rows.length} member${rows.length === 1 ? '' : 's'}`;
+}
+
+tableSearchEl?.addEventListener('input', applyMemberFilter);
+
+document.querySelectorAll('.view-toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.view-toggle-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const isTable = btn.dataset.view === 'table';
+    vpSingle.hidden    = isTable;
+    tableViewEl.hidden = !isTable;
+    if (canvasHintEl) canvasHintEl.style.visibility = isTable ? 'hidden' : '';
+    if (isTable) renderMemberTable();
+  });
+});
+
 /* ═══════════════ MERMAID INIT ═══════════════ */
 mermaid.initialize({ startOnLoad: false, theme: currentTheme, securityLevel: 'loose' });
 
@@ -370,6 +422,8 @@ function switchEvent(key) {
 
 function resetPreviews() {
   _restoreEmptyState(vpSingle, 'Write Mermaid code and press <strong>&#9654; Compile</strong>,<br>or click <strong>Load Sample</strong> to get started.');
+  mermaids.single = '';
+  renderMemberTable();
   setStatus('idle');
 }
 
@@ -445,6 +499,7 @@ async function compileSingle() {
   try {
     await renderInto(vpSingle, code, ctrlSingle);
     editor.clearDiagnostics();
+    renderMemberTable();
     log([{ type: 'success', message: 'Rendered successfully.' }]);
     setStatus('ok');
   } catch (e) {
@@ -561,6 +616,7 @@ async function compileWeddingCombined() {
 
   try {
     await renderInto(vpSingle, code, ctrlSingle);
+    renderMemberTable();
     log([{ type: 'success', message: 'Wedding tree rendered — groom left · bride right.' }]);
     setStatus('ok');
   } catch (e) {
@@ -1127,12 +1183,12 @@ the crossing and lines every generation up on the same row.
 EVENT MODES
 -----------
 Wedding   - Combined single canvas (groom left · bride right)
-Mundan
-Namkaran
-Annaprashan
-Vastu Puja
-Upanayana
-Godh Bharai
+First Haircut (Mundan)
+Naming Ceremony (Namkaran)
+First Rice Feeding (Annaprashan)
+House Warming (Vastu Puja)
+Sacred Thread Ceremony (Upanayana)
+Baby Shower (Godh Bharai)
 Birthday
 Custom Event
 
@@ -1368,12 +1424,12 @@ function buildHelpPrintDoc() {
 <table>
   <tr><th>Event</th><th>Canvas</th><th>Description</th></tr>
   <tr><td><strong>Wedding</strong></td><td>Combined</td><td>Groom's and bride's trees merged on one canvas — groom left, bride right</td></tr>
-  <tr><td>Mundan</td><td>Single</td><td>Child's first haircut ceremony</td></tr>
-  <tr><td>Namkaran</td><td>Single</td><td>Baby naming ceremony</td></tr>
-  <tr><td>Annaprashan</td><td>Single</td><td>First rice-feeding ceremony</td></tr>
-  <tr><td>Vastu Puja</td><td>Single</td><td>House-warming ceremony</td></tr>
-  <tr><td>Upanayana</td><td>Single</td><td>Sacred thread / Janeu ceremony</td></tr>
-  <tr><td>Godh Bharai</td><td>Single</td><td>Baby shower</td></tr>
+  <tr><td>First Haircut (Mundan)</td><td>Single</td><td>Child's first haircut ceremony</td></tr>
+  <tr><td>Naming Ceremony (Namkaran)</td><td>Single</td><td>Baby naming ceremony</td></tr>
+  <tr><td>First Rice Feeding (Annaprashan)</td><td>Single</td><td>First rice-feeding ceremony</td></tr>
+  <tr><td>House Warming (Vastu Puja)</td><td>Single</td><td>House-warming ceremony</td></tr>
+  <tr><td>Sacred Thread Ceremony (Upanayana)</td><td>Single</td><td>Sacred thread / Janeu ceremony</td></tr>
+  <tr><td>Baby Shower (Godh Bharai)</td><td>Single</td><td>Baby shower</td></tr>
   <tr><td>Birthday</td><td>Single</td><td>Birthday celebration</td></tr>
   <tr><td>Custom Event</td><td>Single</td><td>Any other ceremony</td></tr>
 </table>
